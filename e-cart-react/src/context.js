@@ -7,7 +7,7 @@ class ProductProvider extends Component {
   state = {
     products: [],
     detailProduct: detailProduct,
-    cart: storeProducts,
+    cart: [],
     modalOpen: false,
     modalProduct: detailProduct,
     cartSubTotal: 0,
@@ -50,9 +50,18 @@ class ProductProvider extends Component {
     product.count = 1;
     const price = product.price;
     product.total = price;
+    const tempSubTotal = this.state.cartSubTotal + price;
+    const tempTax = tempSubTotal / 10;
+    const tempTotal = tempSubTotal + tempTax;
     this.setState(
       () => {
-        return { products: tempProducts, cart: [...this.state.cart, product] };
+        return {
+          products: tempProducts,
+          cart: [...this.state.cart, product],
+          cartSubTotal: tempSubTotal,
+          cartTax: tempTax,
+          cartTotal: tempTotal
+        };
       },
       () => {
         console.log(this.state);
@@ -74,19 +83,66 @@ class ProductProvider extends Component {
   };
 
   increment = id => {
-    console.log("This is increment method");
+    let tempCart = [...this.state.cart];
+    const index = tempCart.indexOf(this.getItem(id));
+    const product = tempCart[index];
+    console.log(product);
+    product.count++;
+    product.total = product.price * product.count;
+    console.log(product);
+    const tempSubTotal = this.state.cartSubTotal + product.price;
+    const tempTax = tempSubTotal / 10;
+    const tempTotal = tempSubTotal + tempTax;
+
+    this.setState(() => {
+      return {
+        cart: tempCart,
+        cartSubTotal: tempSubTotal,
+        cartTax: tempTax,
+        cartTotal: tempTotal
+      };
+    });
   };
 
   decrement = id => {
-    console.log("This is decrement method");
+    let tempCart = [...this.state.cart];
+    const index = tempCart.indexOf(this.getItem(id));
+    const product = tempCart[index];
+    if (product.count > 1) {
+      product.count--;
+      product.total = product.price * product.count;
+      console.log(product);
+
+      const tempSubTotal = this.state.cartSubTotal - product.price;
+      const tempTax = tempSubTotal / 10;
+      const tempTotal = tempSubTotal + tempTax;
+
+      this.setState(() => {
+        return {
+          cart: tempCart,
+          cartSubTotal: tempSubTotal,
+          cartTax: tempTax,
+          cartTotal: tempTotal
+        };
+      });
+    } else {
+      this.removeItem(id);
+    }
   };
 
   removeItem = id => {
-    console.log("item removed.");
+    let tempCart = [...this.state.cart];
+    const index = tempCart.indexOf(this.getItem(id));
+    tempCart.splice(index, 1);
+    this.setState(() => {
+      return { cart: tempCart };
+    });
   };
 
-  clearCart = id => {
-    console.log("cart cleared");
+  clearCart = () => {
+    this.setState(() => {
+      return { cart: [] };
+    });
   };
   render() {
     return (
